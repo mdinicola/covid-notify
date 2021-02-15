@@ -7,7 +7,7 @@ Globals:
 
 Resources:
   GetFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: covid_notify/
       Handler: app.lambda_handler
@@ -19,7 +19,7 @@ Resources:
             Path: /
             Method: get
   PostFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: covid_notify/
       Handler: app.lambda_handler
@@ -30,6 +30,42 @@ Resources:
           Properties:
             Path: /
             Method: post
+  NotifyFunctionApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CovidNotify-NotifyApi
+      CodeUri: covid_notify/
+      Handler: notify.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          pushoverToken: "agv1fh6jts5ctxsr9zy65cccaq618p"
+          pushoverUser: "uDbqvSAgaqdpDcvshktVoZ3HGPCjsL"
+      Events:
+        Post:
+          Type: Api
+          Properties:
+            Path: /notify
+            Method: get
+  NotifyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CovidNotify-Notify
+      CodeUri: covid_notify/
+      Handler: notify.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          pushoverToken: "agv1fh6jts5ctxsr9zy65cccaq618p"
+          pushoverUser: "uDbqvSAgaqdpDcvshktVoZ3HGPCjsL"
+      Events:
+        OnSchedule:
+          Type: Schedule
+          Properties:
+            Name: "schedule-covid-notify"
+            Description: "Runs the notify endpoint of the CovidNotify application every day at 11 am"
+            Enabled: true
+            Schedule: cron(0 11 * * ? *)
 
 Outputs:
   CovidNotifyApi:
