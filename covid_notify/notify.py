@@ -6,8 +6,7 @@ import os
 def lambda_handler(event, context):
     region = "Ontario"
     case_data = CaseInfo(region).fill()
-
-    message = "Could not retrieve info.   Please try again later"
+    
     if case_data.is_stale():
         message = f'{region} reported {case_data.new_cases} new cases yesterday'
     else:
