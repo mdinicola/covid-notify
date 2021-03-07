@@ -16,7 +16,7 @@ def lambda_handler(event, context):
     if case_data.is_stale():
         message = f'{region} reported {case_data.new_cases} new cases yesterday'
     else:
-        message = f'{region} is reporting {case_data.new_cases} today'
+        message = f'{region} is reporting {case_data.new_cases} new cases today'
         
     request_data = {
         "token": pushover_token,
