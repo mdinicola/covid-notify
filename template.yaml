@@ -46,10 +46,10 @@ Resources:
             Path: /
             Method: post
 
-  NotifyFunctionApi:
+  NotifierFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: CovidNotify-NotifyApi
+      FunctionName: CovidNotify-Notifier
       CodeUri: covid_notify/
       Handler: notify.lambda_handler
       Runtime: python3.8
@@ -66,27 +66,13 @@ Resources:
           Properties:
             Path: /notify
             Method: post
-
-  # NotifyFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: CovidNotify-NotifySchedule
-  #     CodeUri: covid_notify/
-  #     Handler: notify.lambda_handler
-  #     Runtime: python3.8
-  #     Environment:
-  #       Variables:
-  #         SecretName: "apps/covid-notify"
-  #         UserKey: "PushoverUser"
-  #         TokenKey: "PushoverToken"
-  #     Events:
-  #       OnSchedule:
-  #         Type: Schedule
-  #         Properties:
-  #           Name: "schedule-app-covid-notify"
-  #           Description: "Runs the notify endpoint of the CovidNotify application every day at 11 am"
-  #           Enabled: true
-  #           Schedule: cron(0 11 * * ? *)
+        OnSchedule:
+          Type: Schedule
+          Properties:
+            Name: "covid-notify-notifier"
+            Description: "Sends a daily case count notification every day at 11 am"
+            Enabled: true
+            Schedule: cron(0 16 * * ? *) # UTC time - 16:00 = 11:00 AM EST
 
   SecretsManagerSecret:
     Type: AWS::SecretsManager::Secret
