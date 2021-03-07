@@ -65,7 +65,7 @@ Resources:
           Type: Api
           Properties:
             Path: /notify
-            Method: get
+            Method: post
 
   # NotifyFunction:
   #   Type: AWS::Serverless::Function
