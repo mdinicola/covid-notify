@@ -1,9 +1,15 @@
+from secretsmanager import SecretsManagerSecret
 from caseinfo import CaseInfo
 import requests
 import json
 import os
+import boto3
 
 def lambda_handler(event, context):
+    secret = SecretsManagerSecret(boto3.client('secretsmanager'), os.environ['SecretName'])
+    pushover_user = secret.get_value(os.environ['UserKey'])
+    pushover_token = secret.get_value(os.environ['TokenKey'])
+
     region = "Ontario"
     case_data = CaseInfo(region).fill()
     
@@ -14,8 +20,8 @@ def lambda_handler(event, context):
         
 
     request_data = {
-        "token": os.environ['pushoverToken'],
-        "user": os.environ['pushoverUser'],
+        "token": pushover_token,
+        "user": pushover_user,
         "message": message
     }
 
