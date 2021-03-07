@@ -6,8 +6,22 @@ Globals:
     Timeout: 30
 
 Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns:
+      - Fn::Sub: arn:aws:iam::${AWS::AccountId}:policy/SecretsViewOnly
+
   GetFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: covid_notify/
       Handler: app.lambda_handler
@@ -18,8 +32,9 @@ Resources:
           Properties:
             Path: /
             Method: get
+
   PostFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: covid_notify/
       Handler: app.lambda_handler
@@ -30,6 +45,41 @@ Resources:
           Properties:
             Path: /
             Method: post
+
+  NotifierFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CovidNotify-Notifier
+      CodeUri: covid_notify/
+      Handler: notify.lambda_handler
+      Runtime: python3.8
+      Role:
+        Fn::GetAtt: LambdaRole.Arn
+      Environment:
+        Variables:
+          SecretName: "apps/covid-notify"
+          UserKey: "PushoverUser"
+          TokenKey: "PushoverToken"
+      Events:
+        Post:
+          Type: Api
+          Properties:
+            Path: /notify
+            Method: post
+        OnSchedule:
+          Type: Schedule
+          Properties:
+            Name: "covid-notify-notifier"
+            Description: "Sends a daily case count notification every day at 11 am"
+            Enabled: true
+            Schedule: cron(0 16 * * ? *) # UTC time - 16:00 = 11:00 AM EST
+
+  SecretsManagerSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: "apps/covid-notify"
+      Description: "Secret values for the Covid Notify application"
+      SecretString: '{"PushoverUser": "", "PushoverToken": ""}'
 
 Outputs:
   CovidNotifyApi:
