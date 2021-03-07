@@ -57,9 +57,9 @@ Resources:
         Fn::GetAtt: LambdaRole.Arn
       Environment:
         Variables:
-          SecretName: "test"
+          SecretName: "apps/covid-notify"
           UserKey: "PushoverUser"
-          TokenKey: "PushoverCovidNotifyToken"
+          TokenKey: "PushoverToken"
       Events:
         Post:
           Type: Api
@@ -76,16 +76,24 @@ Resources:
   #     Runtime: python3.8
   #     Environment:
   #       Variables:
-  #         pushoverToken: ""
-  #         pushoverUser: ""
+  #         SecretName: "apps/covid-notify"
+  #         UserKey: "PushoverUser"
+  #         TokenKey: "PushoverToken"
   #     Events:
   #       OnSchedule:
   #         Type: Schedule
   #         Properties:
-  #           Name: "schedule-covid-notify"
+  #           Name: "schedule-app-covid-notify"
   #           Description: "Runs the notify endpoint of the CovidNotify application every day at 11 am"
   #           Enabled: true
   #           Schedule: cron(0 11 * * ? *)
+
+  SecretsManagerSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: "apps/covid-notify"
+      Description: "Secret values for the Covid Notify application"
+      SecretString: '{"PushoverUser": "", "PushoverToken": ""}'
 
 Outputs:
   CovidNotifyApi:
