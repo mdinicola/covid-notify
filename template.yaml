@@ -20,9 +20,10 @@ Resources:
       ManagedPolicyArns:
       - Fn::Sub: arn:aws:iam::${AWS::AccountId}:policy/SecretsViewOnly
 
-  GetFunction:
+  GetInfoFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: CovidNotify-GetInfo
       CodeUri: covid_notify/
       Handler: app.lambda_handler
       Runtime: python3.8
@@ -33,17 +34,18 @@ Resources:
             Path: /
             Method: get
 
-  PostFunction:
+  SpeakerFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: CovidNotify-Speaker
       CodeUri: covid_notify/
-      Handler: app.lambda_handler
+      Handler: speaker.lambda_handler
       Runtime: python3.8
       Events:
         Post:
           Type: Api
           Properties:
-            Path: /
+            Path: /speak
             Method: post
 
   NotifierFunction:
