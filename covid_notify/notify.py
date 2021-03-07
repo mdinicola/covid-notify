@@ -18,18 +18,16 @@ def lambda_handler(event, context):
     else:
         message = f'{region} is reporting {case_data.new_cases} today'
         
-
     request_data = {
         "token": pushover_token,
         "user": pushover_user,
         "message": message
     }
 
-    #response = requests.post("https://api.pushover.net/1/messages.json", request_data)
+    response = requests.post("https://api.pushover.net/1/messages.json", request_data)
 
     return {
-        #"statusCode": response.status_code,
+        "statusCode": response.status_code,
         "statusCode": 200,
-        #"body": json.dumps(response.json()),
-        "body": json.dumps(request_data),
+        "body": json.dumps(response.json())
     }
