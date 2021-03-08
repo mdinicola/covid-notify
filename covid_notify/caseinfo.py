@@ -41,9 +41,9 @@ class CaseInfo:
         new_cases = today_cases - yesterday_cases
         return "{:.0f}".format(new_cases)
 
-    def is_stale(self):
-        today = datetime.now(self._eastern_timezone)
-        return not (today >= self.reported_date)
+    def _is_stale(self):
+        today = datetime.now(self._eastern_timezone).replace(hour=0,minute=0,second=0,microsecond=0)
+        return (today > self.reported_date)
 
     def format_message(self, speak = False):
         message = ""
