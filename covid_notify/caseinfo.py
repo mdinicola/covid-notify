@@ -1,5 +1,7 @@
-import pandas
+import csv
 import json
+import requests
+from http import HTTPStatus
 from datetime import datetime, timedelta
 from pytz import timezone
 from json import JSONEncoder
@@ -20,15 +22,22 @@ class CaseInfo:
         return self
     
     def _read_data(self, url):
-        return pandas.read_csv(url)
+        response = requests.get(url)
+        if response.status_code != HTTPStatus.OK:
+            print('Downloading file failed with status: ', response.status_code)
+            raise Exception("Request failed")
+
+        csvfile = csv.DictReader(response.text.strip().split('\n'))
+        data = list(csvfile)
+        return data
 
     def _get_reported_date(self, data):
-        reported_date = data['Reported Date'].iat[-1]
+        reported_date = data[-1]['Reported Date']
         return self._eastern_timezone.localize(datetime.strptime(reported_date, '%Y-%m-%d'))
 
     def _get_new_cases(self, data):
-        today_cases = data['Total Cases'].iat[-1]
-        yesterday_cases = data['Total Cases'].iat[-2]
+        today_cases = float(data[-1]['Total Cases'])
+        yesterday_cases = float(data[-2]['Total Cases'])
         new_cases = today_cases - yesterday_cases
         return "{:.0f}".format(new_cases)
 
