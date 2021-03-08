@@ -3,8 +3,12 @@ Transform: AWS::Serverless-2016-10-31
 Description: SAM template for CovidNotify Application
 Globals:
   Function:
+    Runtime: python3.8
     Timeout: 30
-
+Parameters:
+  ServiceName:
+    Type: String
+    Default: CovidNotify
 Resources:
   LambdaRole:
     Type: AWS::IAM::Role
@@ -20,39 +24,61 @@ Resources:
       ManagedPolicyArns:
       - Fn::Sub: arn:aws:iam::${AWS::AccountId}:policy/SecretsViewOnly
 
-  GetFunction:
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: "Prod"
+      Name:
+        Fn::Sub: "${ServiceName}-ApiGateway"
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: "./api.json"
+      MethodSettings:
+      - LoggingLevel: ERROR
+        ResourcePath: "/*"
+        HttpMethod: "*"
+
+  GetInfoFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Sub: "${ServiceName}-GetInfo"
       CodeUri: covid_notify/
       Handler: app.lambda_handler
-      Runtime: python3.8
       Events:
         Get:
           Type: Api
           Properties:
-            Path: /
+            RestApiId:
+              Ref: ApiGatewayApi
+            Path: "/"
             Method: get
 
-  PostFunction:
+  SpeakerFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Sub: "${ServiceName}-Speaker"
       CodeUri: covid_notify/
-      Handler: app.lambda_handler
-      Runtime: python3.8
+      Handler: speaker.lambda_handler
       Events:
         Post:
           Type: Api
           Properties:
-            Path: /
+            RestApiId:
+              Ref: ApiGatewayApi
+            Path: "/speak"
             Method: post
 
   NotifierFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: CovidNotify-Notifier
+      FunctionName: 
+        Fn::Sub: "${ServiceName}-Notifier"
       CodeUri: covid_notify/
       Handler: notify.lambda_handler
-      Runtime: python3.8
       Role:
         Fn::GetAtt: LambdaRole.Arn
       Environment:
@@ -64,7 +90,9 @@ Resources:
         Post:
           Type: Api
           Properties:
-            Path: /notify
+            RestApiId:
+              Ref: ApiGatewayApi
+            Path: "/notify"
             Method: post
         OnSchedule:
           Type: Schedule
@@ -84,4 +112,4 @@ Resources:
 Outputs:
   CovidNotifyApi:
     Description: "API Gateway URL"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

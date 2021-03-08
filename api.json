@@ -1,0 +1,106 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "title": "Covid Notify",
+      "description": "API for Covid Notify application",
+      "version": "1.0.0"
+    },
+    "basePath": "/",
+    "paths": {
+      "/": {
+        "get": {
+          "summary": "GetInfo Function",
+          "description": "Gets daily case count",
+          "operationId": "GetInfoFunction",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "Success"
+            },
+            "404": {
+              "description": "Not found"
+            },
+            "500": {
+              "description": "500 Internal Server Error"
+            },
+            "503": {
+              "description": "SERVICE UNAVAILABLE"
+            }
+          },
+          "x-amazon-apigateway-integration": {
+            "type": "aws_proxy",
+            "httpMethod": "POST",
+            "uri": {
+              "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetInfoFunction.Arn}/invocations"
+            }
+          }
+        }
+      },
+      "/speak": {
+        "post": {
+          "summary": "Speaker Function",
+          "description": "Integrates with Google Actions to speak the daily case count",
+          "operationId": "SpeakerFunction",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "Success"
+            },
+            "404": {
+              "description": "Not found"
+            },
+            "500": {
+              "description": "500 Internal Server Error"
+            },
+            "503": {
+              "description": "SERVICE UNAVAILABLE"
+            }
+          },
+          "x-amazon-apigateway-integration": {
+            "type": "aws_proxy",
+            "httpMethod": "POST",
+            "uri": {
+              "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SpeakerFunction.Arn}/invocations"
+            }
+          }
+        }
+      },
+      "/notify": {
+        "post": {
+          "summary": "Notifier Function",
+          "description": "Notifies the daily case count via Push notification",
+          "operationId": "NotifierFunction",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "Success"
+            },
+            "404": {
+              "description": "Not found"
+            },
+            "500": {
+              "description": "500 Internal Server Error"
+            },
+            "503": {
+              "description": "SERVICE UNAVAILABLE"
+            }
+          },
+          "x-amazon-apigateway-integration": {
+            "type": "aws_proxy",
+            "httpMethod": "POST",
+            "uri": {
+              "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NotifierFunction.Arn}/invocations"
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  
