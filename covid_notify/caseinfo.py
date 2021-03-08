@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from pytz import timezone
 from json import JSONEncoder
 
-
 class CaseInfo:
     _ONTARIO_COVID_RESULTS_URL = "https://data.ontario.ca/dataset/f4f86e54-872d-43f8-8a86-3892fd3cb5e6/resource/ed270bb8-340b-41f9-a7c6-e8ef587e6d11/download/covidtesting.csv"
     _eastern_timezone = timezone('Canada/Eastern')
@@ -18,6 +17,7 @@ class CaseInfo:
         data = self._read_data(self._ONTARIO_COVID_RESULTS_URL)
         self.reported_date = self._get_reported_date(data)
         self.new_cases = self._get_new_cases(data)
+        self.is_stale = self._is_stale()
         self.message = self.format_message(speak)
         return self
     
@@ -55,7 +55,7 @@ class CaseInfo:
             number_open = '<say-as interpret-as=\"cardinal\">'
             number_close = '</say-as>'
 
-        if self.is_stale():
+        if self.is_stale:
             message = f'{message_open}{self.region} reported {number_open}{self.new_cases}{number_close} new cases yesterday{message_close}'
         else:
             message = f'{message_open}{self.region} is reporting {number_open}{self.new_cases}{number_close} new cases today{message_close}'
@@ -67,7 +67,7 @@ class CaseInfoEncoder(JSONEncoder):
         output = {}
         output['newCases'] = o.new_cases
         output['reportedDate'] = o.reported_date.strftime('%Y-%m-%d')
-        output['isStale'] = o.is_stale()
+        output['isStale'] = o.is_stale
         output['region'] = o.region
         output['message'] = o.message
         return output
