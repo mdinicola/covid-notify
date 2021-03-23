@@ -100,7 +100,7 @@ Resources:
             Name: "covid-notify-notifier"
             Description: "Sends a daily case count notification every day at 11 am"
             Enabled: true
-            Schedule: cron(0 16 * * ? *) # UTC time - 16:00 = 11:00 AM EST
+            Schedule: cron(0 16 * * ? *) # UTC time -> 16:00 = 11:00 AM EST, 15:00 = 11:00 AM EDT
 
   SecretsManagerSecret:
     Type: AWS::SecretsManager::Secret
