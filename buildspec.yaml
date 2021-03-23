@@ -12,4 +12,4 @@ phases:
        - sam package --output-template-file packaged-template.yaml --s3-bucket $ARTIFACTS_BUCKET --s3-prefix $ARTIFACTS_FOLDER
 artifacts:
     files:
-      - packaged-template.yml
+      - packaged-template.yaml
