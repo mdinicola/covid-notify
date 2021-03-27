@@ -29,6 +29,10 @@ Parameters:
     Description: The IAM role name of the pipeline role
     Default: CodePipelineRole
     Type: String
+  PipelineNotificationTopicName:
+    Description: The name of the SNS topic for pipeline notifications
+    Default: CodePipelineNotifications
+    Type: String
   ArtifactsBucketName:
     Description: The name of the artifacts bucket
     Type: String
@@ -38,7 +42,7 @@ Resources:
     Type: AWS::CodeBuild::Project
     Properties:
       Name: !Ref ServiceName
-      ServiceRole: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/service-role/${BuildProjectRoleName}
+      ServiceRole: !Sub arn:aws:iam::${AWS::AccountId}:role/service-role/${BuildProjectRoleName}
       Source:
         Type: CODEPIPELINE
         BuildSpec: buildspec.yaml
@@ -60,7 +64,7 @@ Resources:
       ArtifactStore: 
         Location: !Ref ArtifactsBucketName
         Type: S3
-      RoleArn: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/service-role/${PipelineRoleName}
+      RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/service-role/${PipelineRoleName}
       Stages:
         - Name: Source
           Actions:
@@ -105,7 +109,7 @@ Resources:
               Configuration: 
                 ActionMode: CHANGE_SET_REPLACE
                 Capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM,CAPABILITY_AUTO_EXPAND
-                RoleArn: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${DeployRoleName}
+                RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${DeployRoleName}
                 StackName: !Ref ServiceName
                 TemplatePath: "BuildArtifact::packaged-template.yaml"
                 ChangeSetName: !Sub a-${ServiceName}-Deploy
@@ -122,10 +126,22 @@ Resources:
                 ChangeSetName: !Sub a-${ServiceName}-Deploy
               RunOrder: 2
 
+  PipelineNotificationRule:
+    Type: 'AWS::CodeStarNotifications::NotificationRule'
+    Properties:
+      Name: !Sub "${ServiceName}-PipelineNotificationRule"
+      DetailType: BASIC
+      Resource: !Sub "arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${Pipeline}"
+      EventTypeIds:
+        - codepipeline-pipeline-pipeline-execution-succeeded
+        - codepipeline-pipeline-pipeline-execution-canceled
+        - codepipeline-pipeline-pipeline-execution-failed
+      Targets: 
+        - TargetType: SNS 
+          TargetAddress: !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${PipelineNotificationTopicName}"
+
 Outputs:
   PipelineName:
     Value: !Ref Pipeline
   PipelineVersion:
     Value: !GetAtt Pipeline.Version
-      
-    
