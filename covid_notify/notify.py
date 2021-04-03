@@ -16,7 +16,8 @@ def lambda_handler(event, context):
     request_data = {
         "token": pushover_token,
         "user": pushover_user,
-        "message": case_data.message
+        "message": case_data.message,
+        "sound": os.environ['NotificationSound']
     }
 
     response = requests.post("https://api.pushover.net/1/messages.json", request_data)

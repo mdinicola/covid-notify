@@ -9,6 +9,9 @@ Parameters:
   ServiceName:
     Type: String
     Default: CovidNotify
+  NotificationSound:
+    Type: String
+    Default: classical
 Resources:
   LambdaRole:
     Type: AWS::IAM::Role
@@ -86,6 +89,7 @@ Resources:
           SecretName: "apps/covid-notify"
           UserKey: "PushoverUser"
           TokenKey: "PushoverToken"
+          NotificationSound: !Ref NotificationSound
       Events:
         Post:
           Type: Api
