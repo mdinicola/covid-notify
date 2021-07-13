@@ -2,7 +2,7 @@ import csv
 import json
 import requests
 from http import HTTPStatus
-from datetime import datetime, timedelta
+from datetime import datetime
 from pytz import timezone
 from json import JSONEncoder
 
