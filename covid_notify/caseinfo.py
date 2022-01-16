@@ -1,6 +1,7 @@
 import csv
 import json
 import requests
+import statistics
 from http import HTTPStatus
 from datetime import datetime
 from pytz import timezone
@@ -17,6 +18,9 @@ class CaseInfo:
         data = self._read_data(self._ONTARIO_COVID_RESULTS_URL)
         self.reported_date = self._get_reported_date(data)
         self.new_cases = self._get_new_cases(data)
+        self.weekly_average_cases = self._get_average_cases(data, 7)
+        self.new_icu = self._get_new_icu(data)
+        self.weekly_average_icu = self._get_average_icu(data, 7)
         self.is_stale = self._is_stale()
         self.message = self.format_message(speak)
         return self
@@ -41,6 +45,23 @@ class CaseInfo:
         new_cases = today_cases - yesterday_cases
         return "{:.0f}".format(new_cases)
 
+    def _get_average_cases(self, data, interval):
+        cases = []
+        for x in range(1, interval + 1):
+            delta = float(data[x * -1]['Total Cases']) - float(data[(x + 1) * -1]['Total Cases'])
+            cases.append(delta)
+        return "{:.0f}".format(statistics.mean(cases))
+
+    def _get_new_icu(self, data):
+        new_icu = float(data[-1]['Number of patients in ICU due to COVID-19'])
+        return "{:.0f}".format(new_icu)
+
+    def _get_average_icu(self, data, interval):
+        icu = []
+        for x in range(1, interval + 1):
+            icu.append(float(data[x * -1]['Number of patients in ICU due to COVID-19']))
+        return "{:.0f}".format(statistics.mean(icu))
+
     def _is_stale(self):
         today = datetime.now(self._eastern_timezone).replace(hour=0,minute=0,second=0,microsecond=0)
         return (today > self.reported_date)
@@ -62,10 +83,18 @@ class CaseInfo:
 
         return message
 
+        # Ontario reported xxx new cases yesterday
+        # Ontario is reporting xxx new cases today
+
+        # Today in Ontario: xxx cases and xxx weekly average, xxx in ICU, xxx weekly ICU average
+
 class CaseInfoEncoder(JSONEncoder):
     def default(self, o):
         output = {}
         output['newCases'] = o.new_cases
+        output['weeklyAverageCases'] = o.weekly_average_cases
+        output['newICU'] = o.new_icu
+        output['weeklyAverageICU'] = o.weekly_average_icu
         output['reportedDate'] = o.reported_date.strftime('%Y-%m-%d')
         output['isStale'] = o.is_stale
         output['region'] = o.region
