@@ -77,7 +77,7 @@ class CaseInfo:
         if self.is_stale:
             message_day = "Yesterday"
 
-        message = f'{message_open}{message_day} in {self.region}: {number_open}{self.new_cases}{number_close} new cases, weekly average {number_open}{self.weekly_average_cases}{number_close}; in ICU: {number_open}{self.new_icu}{number_close}, weekly average {number_open}{self.weekly_average_icu}{number_close}{message_close}'
+        message = f'{message_open}{message_day} in {self.region}: {number_open}{self.new_cases}{number_close} new cases, weekly average {number_open}{self.weekly_average_cases}{number_close}; <break time="1" /> in ICU: {number_open}{self.new_icu}{number_close}, weekly average {number_open}{self.weekly_average_icu}{number_close}{message_close}'
 
         return message
 
